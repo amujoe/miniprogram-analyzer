@@ -10,15 +10,11 @@ const tree = require("./tree");
 class depend {
 
     constructor() {
-        // this.filepath = ""
-    }
-
-    show() {
-        console.log("depend show");
     }
 
     // 解析
     fileDeps(filepath) {
+        console.log("filepath", filepath);
         let pageObj = new tree(path.basename(filepath), 0, filepath)
         
         let suffixs = ['js', 'json', 'wxml', 'wxss'];
@@ -33,27 +29,29 @@ class depend {
                 case "json":
                     fileObj = depend.jsonDeps(fullPath)
                     break
+                case "wxml":
+                    fileObj = depend.wxmlDeps(fullPath)
+                    break
+                case "wxss":
+                    fileObj = depend.wxssDeps(fullPath)
+                    break
+                default:
+                    break
             }
-            pageObj.size += size;
+            // pageObj.value += fileObj.value;
+            pageObj.addSize(fileObj.value)
             pageObj.children.push(fileObj);
         })
       
         return pageObj
     }
     // js
-    jsDeps(filepath){
-        let size = depend.getSize(filepath);
-        let fileObj = {
-            value: size,
-            name: path.basename(filepath),
-            path: filepath,
-            children: [{
-                value: size,
-                name: path.basename(filepath),
-                path: filepath,
-                children: []
-            }]
-        }
+    static jsDeps(filepath){
+        console.log("filepath2", filepath);
+        let jsObj = new tree(path.basename(filepath), depend.getSize(filepath), filepath)
+
+        let selfObj = JSON.parse(JSON.stringify(jsObj))
+        jsObj.addChildren(selfObj)
 
         let file = fsA.readFileSync(String(filepath), 'utf-8');
         let AST = depend.parse(file);
@@ -61,15 +59,16 @@ class depend {
 
         if(nodes.length) {
             nodes.forEach(item => {
-                fileObj.value += item.value
-                fileObj.children.push(item)
+                // jsObj.value += item.value
+                jsObj.addSize(item.value)
+                jsObj.addChildren(item)
             })
         }
 
-        return fileObj
+        return jsObj
     }
     // json > componets
-    jsonDeps(filepath) {
+    static jsonDeps(filepath) {
         let compsObj = new tree("json", 0, filepath)
         console.log("json", compsObj)
 
@@ -86,12 +85,20 @@ class depend {
         return compsObj;
     }
 
-    wxmlDeps(filepath) {
+    // wxml
+    static wxmlDeps(filepath) {
+        let wxmlObj = new tree(path.basename(filepath), 0, filepath)
+        wxmlObj.value = depend.getSize(filepath);
 
+        return wxmlObj;
     }
 
-    wxssDeps(filepath) {
-
+    // wxss
+    static wxssDeps(filepath) {
+        let wxssObj = new tree(path.basename(filepath), 0, filepath)
+        wxssObj.value = depend.getSize(filepath);
+        
+        return wxssObj;
     }
 
     // 解析为 AST 节点
@@ -111,11 +118,8 @@ class depend {
                 const { value } = node.source
                 const file = depend.fileIsExists(filepath, value);
                 if(file) {
-                    deps.push({
-                        name: path.basename(file),
-                        value: depend.getSize(file),
-                        path: value
-                    })
+                    let wxmlObj = new tree(path.basename(file), depend.getSize(file), value)
+                    deps.push(wxmlObj)
                 }
             },
             ExportDeclaration: ({node}) => {
@@ -123,11 +127,13 @@ class depend {
                 const { value } = node.source
                 const file = depend.fileIsExists(filepath, value);
                 if(file) {
-                    deps.push({
-                        name: path.basename(file),
-                        value: depend.getSize(file),
-                        path: value
-                    })
+                    let wxmlObj = new tree(path.basename(file), depend.getSize(file), value)
+                    deps.push(wxmlObj)
+                    // deps.push({
+                    //     name: path.basename(file),
+                    //     value: depend.getSize(file),
+                    //     path: value
+                    // })
                 }
                 // console.log("export", node);
             },
@@ -170,9 +176,10 @@ class depend {
     }
     // 获取文件大小
     static getSize(filePath) {
+        // console.log("filePath3", filePath)
 
         // 路径为空 || 文件不存在
-        if(!filePath || !fs.existsSync(pathAbsolute)) return 0
+        if(!filePath || !fs.existsSync(filePath)) return 0
 
         let size = fs.statSync(filePath).size / 1000;
         return Number(size.toFixed(2));

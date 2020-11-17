@@ -1,14 +1,17 @@
 class tree {
-    constructor(name = "", size=0, path = "") {
+    constructor(name = "", value=0, path = "") {
         this.name = name
-        this.size = size
+        this.value = value
         this.path = path
         this.children = []
     }
 
-    // 控制 value 保留两位小数
-    set value(value) {
-        return Number(value.toFixed(2))
+    // 添加体积
+    addSize(value) {
+        // this.value = (this.value + value).toFixed(2)
+        // this.value = this.value + value;
+        this.value =this.value + value;
+        // this.children.push(obj)
     }
 
     // 添加子集
