@@ -14,7 +14,7 @@ class depend {
 
     // 解析
     fileDeps(filepath) {
-        console.log("filepath", filepath);
+        // console.log("filepath", filepath);
         let pageObj = new tree(path.basename(filepath), 0, filepath)
         
         let suffixs = ['js', 'json', 'wxml', 'wxss'];
@@ -47,7 +47,7 @@ class depend {
     }
     // js
     static jsDeps(filepath){
-        console.log("filepath2", filepath);
+        // console.log("filepath2", filepath);
         let jsObj = new tree(path.basename(filepath), depend.getSize(filepath), filepath)
 
         let selfObj = JSON.parse(JSON.stringify(jsObj))
@@ -70,7 +70,7 @@ class depend {
     // json > componets
     static jsonDeps(filepath) {
         let compsObj = new tree("json", 0, filepath)
-        console.log("json", compsObj)
+        // console.log("json", compsObj)
 
         let file = JSON.parse(fsA.readFileSync(String(filepath), 'utf-8'));
         let components = file.usingComponents
@@ -78,7 +78,7 @@ class depend {
         for(let key in components) {
             let comObj = new tree()
             comObj.name = key
-            comObj.path = components[key]
+            comObj.path = depend.getPathAbsolute(filepath, components[key])
             compsObj.addChildren(comObj)
         }
 
@@ -147,8 +147,7 @@ class depend {
     }
     // 判断文件是不是真实存在
     static fileIsExists(filepath, url){
-        const dirName = path.dirname(filepath) // 文件目录
-        const pathAbsolute = path.resolve(dirName, url)  // 绝对路径
+        const pathAbsolute = depend.getPathAbsolute(filepath, url)  // 绝对路径
         const ext = path.extname(url)  // 后缀
         // console.log("filepath", filepath);
         // console.log("url", url);
@@ -183,6 +182,13 @@ class depend {
 
         let size = fs.statSync(filePath).size / 1000;
         return Number(size.toFixed(2));
+    }
+    // 获取绝对路径
+    static getPathAbsolute(filePath, url) {
+
+        if(!filePath || url) return "";
+
+        return path.resolve(path.dirname(filepath), url)  // 绝对路径
     }
 }
 

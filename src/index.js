@@ -5,6 +5,8 @@ const config = require('./config.js')
 const depend = require('./modules/depend')
 const path = require("path");
 const tree = require("./modules/tree");
+// const serve = require("./modules/serve");
+const cmd = require("./modules/cmd");
 
 let depTools = new depend();
 
@@ -52,9 +54,9 @@ function test() {
   //   console.log("err", err)
 
   // });
-  let subObj = new tree("123", 20, "123")
-  subObj.sizeA=23
-  console.log('subobj', subObj);
+  // let subObj = new tree("123", 20, "123")
+  // subObj.sizeA=23
+  // console.log('subobj', subObj);
 
   // let dep = new depend();
   // console.log("dep", dep);
@@ -72,6 +74,7 @@ function test() {
 
   // });
 
+  // cmd.run("node src/modules/serve.js")
 
 }
 
@@ -84,7 +87,7 @@ function start() {
   const subSize = analyzerSize(pages.subPackages);
   // console.log("subSize", subSize)
 
-  fs.writeFile("./src/data.json", JSON.stringify(subSize));
+  fs.writeFile("./data/data.json", JSON.stringify(subSize));
 }
 
 

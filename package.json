@@ -4,7 +4,8 @@
   "description": "miniprogram analyzer",
   "main": "index.js",
   "scripts": {
-    "dev": "node src/index.js"
+    "dev": "node src/index.js",
+    "serve": "gulp dev"
   },
   "keywords": [
     "analyzer"
@@ -14,5 +15,9 @@
   "dependencies": {
     "@babel/parser": "^7.12.5",
     "@babel/traverse": "^7.12.5"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.26.13",
+    "gulp": "^4.0.2"
   }
 }
