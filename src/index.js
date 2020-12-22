@@ -2,13 +2,13 @@
 const fs = require('./modules/fs');
 const fsA = require('fs');
 const config = require('./config.js')
-const depend = require('./modules/depend')
+const depTools = require('./modules/depend')
 const path = require("path");
 const tree = require("./modules/tree");
 // const serve = require("./modules/serve");
 const cmd = require("./modules/cmd");
 
-let depTools = new depend();
+// let depTools = new depend();
 
 // console.log('path', path);
 
@@ -84,10 +84,12 @@ function start() {
   console.log("config", config);
 
   const pages = ready();
+  // console.log("pages", pages)
+  const mainSize = analyzerSize(pages.main);
   const subSize = analyzerSize(pages.subPackages);
   // console.log("subSize", subSize)
 
-  fs.writeFile("./data/data.json", JSON.stringify(subSize));
+  fs.writeFile("./data/data.json", JSON.stringify([...mainSize, ...subSize]));
 }
 
 
@@ -96,14 +98,20 @@ function ready() {
 
   let appJson = JSON.parse(fs.readFileSync(config.appJson));
 
+  let main = [
+    {
+      root: "pages",
+      name: "pages",
+      pages: appJson.pages.map(item => item.substr(6))
+    }
+  ]
   return {
-    main: appJson.pages, // 主包,
+    main: main, // 主包,
     subPackages: appJson.subPackages // 分包
   }
 }
 
-
-// 分析分包, 文件大小
+// 2. 分析分包, 文件大小
 function analyzerSize(subs) {
 
   if(!Array.isArray(subs) || subs.length == 0) {

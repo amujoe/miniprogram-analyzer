@@ -4,6 +4,7 @@ const fs = require("fs");
 const fsA = require("./fs");
 const { url } = require("inspector");
 const path = require("path");
+const config = require('../config.js')
 const tree = require("./tree");
 
 
@@ -13,7 +14,7 @@ class depend {
     }
 
     // 解析
-    fileDeps(filepath) {
+    static fileDeps(filepath) {
         // console.log("filepath", filepath);
         let pageObj = new tree(path.basename(filepath), 0, filepath)
         
@@ -74,11 +75,42 @@ class depend {
 
         let file = JSON.parse(fsA.readFileSync(String(filepath), 'utf-8'));
         let components = file.usingComponents
+        console.log("filepath-1", filepath);
+        console.log("components", components);
+
+        // 没有组件
+        if (!components) {
+            console.log("components is undefined");
+            return compsObj;
+        }
 
         for(let key in components) {
-            let comObj = new tree()
-            comObj.name = key
-            comObj.path = depend.getPathAbsolute(filepath, components[key])
+            console.log("components[key]-1", components[key])
+            // console.log("components[key]-path", depend.getPathAbsolute(filepath, components[key]));
+            console.log("plugin", components[key].substr(0, 9))
+
+            let comPath = "";
+            // ‘/’ 表示公共组件
+            if (components[key][0] == '/') {
+                comPath = config.distPath + components[key];
+            } else if (components[key].substr(0, 9) == 'plugin://') {
+                // 插件 
+                continue;
+            } else {
+                comPath = depend.getPathAbsolute(filepath, components[key])
+            }
+
+            // let comPath = depend.getPathAbsolute(filepath, components[key])
+            let comObj = depend.fileDeps(comPath)
+            // console.log("comObj", comObj)
+            // let comObj = new tree()
+            // comObj.name = key
+            // comObj.path = depend.getPathAbsolute(filepath, components[key])
+            // com = depend.fileDeps(comObj.path);
+
+            // subObj.addSize(pageObj.value)
+            // subObj.addChildren(pageObj);
+            compsObj.addSize(comObj.value)
             compsObj.addChildren(comObj)
         }
 
@@ -185,10 +217,9 @@ class depend {
     }
     // 获取绝对路径
     static getPathAbsolute(filePath, url) {
+        if(!filePath || !url) return "";
 
-        if(!filePath || url) return "";
-
-        return path.resolve(path.dirname(filepath), url)  // 绝对路径
+        return path.resolve(path.dirname(filePath), url)  // 绝对路径
     }
 }
 
