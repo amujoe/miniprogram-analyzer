@@ -82,7 +82,7 @@ class depend {
         if (!components) {
             console.log("components is undefined");
             return compsObj;
-        }
+        } 
 
         for(let key in components) {
             console.log("components[key]-1", components[key])
