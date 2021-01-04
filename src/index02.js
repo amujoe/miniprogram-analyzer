@@ -14,6 +14,10 @@ function start() {
   console.log("start")
  
   const dirs = Tile.start();
+  // let obj = {
+  //   name: "dist",
+  //   children: [...dirs.children]
+  // }
 
   fs.writeFileSync("./data/data.json", JSON.stringify([...dirs.children]));
   console.log("写入完成");
